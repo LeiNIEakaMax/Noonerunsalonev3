@@ -9,11 +9,8 @@ export function NotFoundPage({ onBackToHome }: NotFoundPageProps) {
     <div className="relative h-screen w-full overflow-hidden bg-brand-blue flex flex-col">
       {/* Rotated Calendar Image Background */}
       <div 
-        className="absolute flex items-center justify-center mix-blend-lighten"
+        className="absolute flex items-center justify-center mix-blend-lighten right-0 top-1/2 -translate-y-1/2"
         style={{
-          left: 'calc(50% + 307.57px)',
-          top: 'calc(50% + 0.14px)',
-          transform: 'translate(-50%, -50%)',
           width: '989px',
           height: '1484px',
         }}
@@ -31,27 +28,28 @@ export function NotFoundPage({ onBackToHome }: NotFoundPageProps) {
 
       {/* 404 Text Content */}
       <div 
-        className="absolute flex flex-col gap-[8px] items-start justify-center text-brand-white"
-        style={{
-          left: 'calc(50% - 407.43px)',
-          top: 'calc(50% - 0.36px)',
-          transform: 'translate(-50%, -50%)',
-        }}
+        className="absolute flex flex-col gap-[54.994px] items-start justify-center text-brand-white bg-brand-blue left-0 top-1/2 -translate-y-1/2 pb-[30px] pl-[32px] pr-[32px] pt-[32px] p-[32px]"
       >
-        <div className="flex flex-col h-[94px] justify-center w-[335px]">
-          <p 
-            className="text-[40px] leading-[32px] tracking-[-1.25px] text-left"
-            style={{ fontFamily: "'Vina Sans', sans-serif" }}
-          >
-            oops! page not found
-          </p>
+        <div className="relative shrink-0">
+          <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex items-center justify-center relative">
+            <p 
+              className="leading-[32px] not-italic relative shrink-0 text-brand-white text-[40px] text-nowrap tracking-[-1.25px]"
+              style={{ fontFamily: "'Vina Sans', sans-serif" }}
+            >
+              oops! page not found
+            </p>
+          </div>
         </div>
         {onBackToHome && (
           <button
             onClick={onBackToHome}
-            className="mt-4 px-6 py-3 bg-brand-white text-brand-blue rounded hover:bg-brand-white/90 transition-colors"
+            className="bg-brand-white h-[47.991px] relative rounded-[4px] shrink-0 w-[149.766px] hover:opacity-90 transition-opacity"
           >
-            Back to Home
+            <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
+              <p className="absolute font-normal leading-[24px] left-1/2 not-italic text-brand-blue text-[16px] text-center text-nowrap top-1/2 tracking-[-0.3125px] -translate-x-1/2 -translate-y-1/2">
+                Back to Home
+              </p>
+            </div>
           </button>
         )}
       </div>

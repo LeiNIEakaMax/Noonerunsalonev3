@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Event, EventType } from '../App';
 import { ExternalLink } from 'lucide-react';
@@ -12,6 +12,9 @@ interface CalendarViewProps {
 export function CalendarView({ events, selectedType }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [expandedDay, setExpandedDay] = useState<{ events: Event[], date: string, position: { x: number, y: number } } | null>(null);
+  const [maxVisibleEvents, setMaxVisibleEvents] = useState(3);
+  const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -89,6 +92,30 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
     );
   };
 
+  // Calculate max visible events based on cell height
+  useEffect(() => {
+    const calculateMaxEvents = () => {
+      // Find a sample cell to measure
+      const sampleCell = cellRefs.current.find(cell => cell !== null);
+      if (!sampleCell) return;
+
+      const cellHeight = sampleCell.offsetHeight;
+      // Account for: date number (30px), padding (5px), and "+X more" button (40px)
+      const availableHeight = cellHeight - 75;
+      
+      // Each event takes approximately 22px (20px line height + 1px divider + 1px padding)
+      const eventHeight = 22;
+      const maxEvents = Math.max(1, Math.floor(availableHeight / eventHeight));
+      
+      setMaxVisibleEvents(maxEvents);
+    };
+
+    calculateMaxEvents();
+    window.addEventListener('resize', calculateMaxEvents);
+    
+    return () => window.removeEventListener('resize', calculateMaxEvents);
+  }, [numberOfRows]);
+
   return (
     <div className="h-full flex flex-col overflow-hidden pb-[16px]">
       {/* Calendar Header */}
@@ -144,6 +171,7 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
           return (
             <motion.div
               key={index}
+              ref={(el) => (cellRefs.current[index] = el)}
               layout
               transition={{
                 layout: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
@@ -153,9 +181,9 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
               {calendarDay.day && (
                 <>
                   {/* Date number */}
-                  <div className="flex justify-start mb-[-4px] mt-[0px] mr-[0px] ml-[0px] m-[0px]">
+                  <div className="flex justify-start mt-[-8px] mr-[0px] mb-[-4px] ml-[0px]">
                     {isTodayDate ? (
-                      <div className="bg-brand-white text-brand-blue w-[24px] h-[24px] rounded-full flex items-center justify-center">
+                      <div className="bg-brand-white text-brand-blue px-[8px] h-[24px] flex items-center justify-center" style={{ borderRadius: 'var(--radius)' }}>
                         <span className="text-[14px] font-medium leading-[21px]">{calendarDay.day}</span>
                       </div>
                     ) : (
@@ -173,7 +201,7 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
                     className="flex flex-col"
                   >
                     <AnimatePresence mode="popLayout">
-                      {dayEvents.slice(0, 3).map((event, eventIndex) => (
+                      {dayEvents.slice(0, maxVisibleEvents).map((event, eventIndex) => (
                         <motion.div 
                           key={event.id}
                           layout
@@ -199,24 +227,40 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
                             </p>
                           </button>
                           {/* Dividing line between events */}
-                          {eventIndex < Math.min(dayEvents.length, 3) - 1 && (
+                          {eventIndex < Math.min(dayEvents.length, maxVisibleEvents) - 1 && (
                             <div className="w-full h-[1px] bg-brand-white/20" />
                           )}
                         </motion.div>
                       ))}
                     </AnimatePresence>
-                    {dayEvents.length > 3 && (
-                      <motion.div 
+                    {dayEvents.length > maxVisibleEvents && (
+                      <motion.button 
                         layout
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className={`py-2 text-[14px] text-brand-white/50 ${
+                        onClick={(e) => {
+                          const cell = cellRefs.current[index];
+                          if (cell) {
+                            const rect = cell.getBoundingClientRect();
+                            const year = calendarDay.date.getFullYear();
+                            const month = calendarDay.date.getMonth() + 1;
+                            const day = calendarDay.date.getDate();
+                            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            
+                            setExpandedDay({
+                              events: dayEvents,
+                              date: dateStr,
+                              position: { x: rect.left, y: rect.top }
+                            });
+                          }
+                        }}
+                        className={`py-2 text-[14px] text-brand-white/50 hover:text-brand-white/70 transition-colors text-left ${
                           isOtherMonth ? 'opacity-60' : ''
                         }`}
                       >
-                        +{dayEvents.length - 3} more
-                      </motion.div>
+                        +{dayEvents.length - maxVisibleEvents} more
+                      </motion.button>
                     )}
                   </motion.div>
                 </>
@@ -278,6 +322,77 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
           </motion.div>
         </div>
       )}
+
+      {/* Expanded Day Popover */}
+      <AnimatePresence>
+        {expandedDay && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 z-40"
+              onClick={() => setExpandedDay(null)}
+            />
+            
+            {/* Popover */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="fixed z-50 bg-brand-blue border border-brand-white/20 p-4 max-w-[280px] max-h-[400px] overflow-y-auto"
+              style={{ 
+                left: `${expandedDay.position.x}px`,
+                top: `${expandedDay.position.y}px`,
+                borderRadius: 'var(--radius)'
+              }}
+            >
+              {/* Header with close button */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[14px] font-medium text-brand-white">
+                  {new Date(expandedDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+                <button
+                  onClick={() => setExpandedDay(null)}
+                  className="text-brand-white/60 hover:text-brand-white transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Event list */}
+              <div className="flex flex-col gap-2">
+                {expandedDay.events.map((event, index) => (
+                  <div key={event.id}>
+                    <button
+                      onClick={() => {
+                        setExpandedDay(null);
+                        setSelectedEvent(event);
+                      }}
+                      className="w-full text-left group"
+                    >
+                      <p className="text-[13px] font-normal text-brand-white leading-[20px] group-hover:underline">
+                        {event.title}
+                      </p>
+                    </button>
+                    {index < expandedDay.events.length - 1 && (
+                      <div className="w-full h-[1px] bg-brand-white/20 my-2" />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* "Less" button to close */}
+              <button
+                onClick={() => setExpandedDay(null)}
+                className="mt-3 text-[14px] text-brand-white/50 hover:text-brand-white/70 transition-colors"
+              >
+                Less
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
