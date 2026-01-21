@@ -675,10 +675,6 @@
     max-width: 80ch;
   }
 
-  .max-w-\[280px\] {
-    max-width: 280px;
-  }
-
   .max-w-md {
     max-width: var(--container-md);
   }
@@ -715,10 +711,6 @@
 
   .resize {
     resize: both;
-  }
-
-  .grid-cols-7 {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .flex-col {
@@ -1036,8 +1028,8 @@
     text-align: left;
   }
 
-  .font-\[Vina_Sans\] {
-    font-family: Vina Sans;
+  .font-\[Stylish\] {
+    font-family: Stylish;
   }
 
   .text-\[12px\] {
@@ -1062,6 +1054,10 @@
 
   .text-\[22px\] {
     font-size: 22px;
+  }
+
+  .text-\[32px\] {
+    font-size: 32px;
   }
 
   .text-\[40px\] {

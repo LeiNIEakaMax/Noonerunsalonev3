@@ -1,20 +1,22 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Event, EventType } from '../App';
+import type { Event, FilterType } from '../App';
 import { ExternalLink } from 'lucide-react';
 
 interface CalendarViewProps {
   events: Event[];
-  selectedType: EventType | 'all';
+  selectedType: FilterType;
 }
 
 export function CalendarView({ events, selectedType }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [expandedDay, setExpandedDay] = useState<{ events: Event[], date: string, position: { x: number, y: number } } | null>(null);
+  const [expandedDay, setExpandedDay] = useState<{ events: Event[], date: string, position: { x: number, y: number }, isLastRow: boolean } | null>(null);
   const [maxVisibleEvents, setMaxVisibleEvents] = useState(3);
+  const [popoverWidth, setPopoverWidth] = useState(280);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -116,6 +118,21 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
     return () => window.removeEventListener('resize', calculateMaxEvents);
   }, [numberOfRows]);
 
+  // Calculate popover width based on grid width
+  useEffect(() => {
+    const calculatePopoverWidth = () => {
+      if (gridRef.current) {
+        // Set to 24.4% of grid width (weekend column width)
+        setPopoverWidth(gridRef.current.offsetWidth * 0.244);
+      }
+    };
+
+    calculatePopoverWidth();
+    window.addEventListener('resize', calculatePopoverWidth);
+    
+    return () => window.removeEventListener('resize', calculatePopoverWidth);
+  }, [numberOfRows]);
+
   return (
     <div className="h-full flex flex-col overflow-hidden pb-[16px]">
       {/* Calendar Header */}
@@ -142,7 +159,11 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
       </div>
 
       {/* Days of Week Header */}
-      <div className="grid grid-cols-7 pb-[-3px] border-b border-brand-white mt-6 pt-[0px] pr-[0px] pl-[0px] flex-shrink-0">
+      <div className="grid pb-[-3px] border-b border-brand-white mt-6 pt-[0px] pr-[0px] pl-[0px] flex-shrink-0"
+        style={{
+          gridTemplateColumns: '9.55% 9.55% 9.55% 9.55% 13% 24.4% 24.4%'
+        }}
+      >
         {daysOfWeek.map((day) => (
           <div
             key={day}
@@ -155,10 +176,12 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
 
       {/* Calendar Grid */}
       <div 
-        className="grid grid-cols-7 flex-1 mt-[0px] mr-[0px] mb-[0px] ml-[0px] min-h-0"
+        className="grid flex-1 mt-[0px] mr-[0px] mb-[0px] ml-[0px] min-h-0"
         style={{
+          gridTemplateColumns: '9.55% 9.55% 9.55% 9.55% 13% 24.4% 24.4%',
           gridTemplateRows: `repeat(${numberOfRows}, 1fr)`
         }}
+        ref={gridRef}
       >
         {calendarDays.map((calendarDay, index) => {
           const dayEvents = getEventsForDate(calendarDay);
@@ -183,7 +206,7 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
                   {/* Date number */}
                   <div className="flex justify-start mt-[-8px] mr-[0px] mb-[-4px] ml-[0px]">
                     {isTodayDate ? (
-                      <div className="bg-brand-white text-brand-blue px-[8px] h-[24px] flex items-center justify-center" style={{ borderRadius: 'var(--radius)' }}>
+                      <div className="bg-brand-white text-brand-blue px-[8px] h-[24px] flex items-center justify-center" style={{ borderRadius: '0 0 999px 999px' }}>
                         <span className="text-[14px] font-medium leading-[21px]">{calendarDay.day}</span>
                       </div>
                     ) : (
@@ -251,7 +274,8 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
                             setExpandedDay({
                               events: dayEvents,
                               date: dateStr,
-                              position: { x: rect.left, y: rect.top }
+                              position: { x: rect.left, y: rect.top },
+                              isLastRow: isLastRow
                             });
                           }
                         }}
@@ -339,17 +363,38 @@ export function CalendarView({ events, selectedType }: CalendarViewProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="fixed z-50 bg-brand-blue border border-brand-white/20 p-4 max-w-[280px] max-h-[400px] overflow-y-auto"
-              style={{ 
-                left: `${expandedDay.position.x}px`,
-                top: `${expandedDay.position.y}px`,
-                borderRadius: 'var(--radius)'
-              }}
+              className="fixed z-50 bg-brand-blue border border-brand-white/20 p-4 max-h-[400px] overflow-y-auto"
+              style={(() => {
+                const baseStyle = {
+                  left: `${expandedDay.position.x}px`,
+                  width: `${popoverWidth}px`,
+                  borderRadius: 'var(--radius)'
+                };
+                
+                if (expandedDay.isLastRow) {
+                  // For last row, position so the popover doesn't overflow the viewport
+                  // Align bottom of popover with bottom of viewport with some padding
+                  return {
+                    ...baseStyle,
+                    bottom: '16px'
+                  };
+                } else {
+                  // For other rows, position normally from the top
+                  return {
+                    ...baseStyle,
+                    top: `${expandedDay.position.y}px`
+                  };
+                }
+              })()}
             >
               {/* Header with close button */}
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[14px] font-medium text-brand-white">
-                  {new Date(expandedDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {(() => {
+                    const [year, month, day] = expandedDay.date.split('-').map(Number);
+                    const localDate = new Date(year, month - 1, day);
+                    return localDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  })()}
                 </span>
                 <button
                   onClick={() => setExpandedDay(null)}

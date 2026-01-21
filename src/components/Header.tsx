@@ -1,13 +1,13 @@
 import { LayoutList, Calendar, Menu, X, Plus, Sun, Moon, Palette, Bug } from 'lucide-react';
 import { useState } from 'react';
-import type { ViewMode, EventType, ColorTheme } from '../App';
+import type { ViewMode, EventType, ColorTheme, FilterType } from '../App';
 import svgPaths from '../imports/svg-l2xlsah3rg';
 
 interface HeaderProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
-  selectedType: EventType | 'all';
-  onTypeChange: (type: EventType | 'all') => void;
+  selectedType: FilterType;
+  onTypeChange: (type: FilterType) => void;
   onAddEventClick: () => void;
   theme: 'light' | 'dark';
   onThemeChange: (theme: 'light' | 'dark') => void;
@@ -18,7 +18,7 @@ interface HeaderProps {
 export function Header({ viewMode, onViewModeChange, selectedType, onTypeChange, onAddEventClick, theme, onThemeChange, colorTheme, onColorThemeChange }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleTypeChange = (type: EventType | 'all') => {
+  const handleTypeChange = (type: FilterType) => {
     onTypeChange(type);
     setIsMobileMenuOpen(false);
   };
@@ -63,7 +63,7 @@ export function Header({ viewMode, onViewModeChange, selectedType, onTypeChange,
             </button>
             
             <button
-              onClick={() => onTypeChange('race')}
+              onClick={() => handleTypeChange('race')}
               className="h-[40px] px-[16px] rounded-md transition-colors flex items-center"
             >
               <p className={`text-[16px] font-normal leading-6 ${
@@ -74,6 +74,22 @@ export function Header({ viewMode, onViewModeChange, selectedType, onTypeChange,
                 Race
               </p>
             </button>
+            
+            {/* Only show Past filter in list view */}
+            {viewMode === 'list' && (
+              <button
+                onClick={() => handleTypeChange('past')}
+                className="h-[40px] px-[16px] rounded-md transition-colors flex items-center"
+              >
+                <p className={`text-[16px] font-normal leading-6 ${
+                  selectedType === 'past'
+                    ? 'text-brand-white underline decoration-solid'
+                    : 'text-brand-white/70'
+                }`}>
+                  Past
+                </p>
+              </button>
+            )}
           </div>
 
           {/* Hamburger Menu - Mobile Only */}
@@ -90,8 +106,8 @@ export function Header({ viewMode, onViewModeChange, selectedType, onTypeChange,
           </button>
 
           {/* Brand Name - Center */}
-          <h1 className="text-[40px] font-normal leading-6 text-brand-white font-[Vina_Sans]">
-            no one runs alone
+          <h1 className="text-[32px] font-normal leading-6 text-brand-white font-[Stylish]">
+            for the shared experience
           </h1>
 
           {/* View Mode Selector - Desktop Only */}
@@ -273,6 +289,22 @@ export function Header({ viewMode, onViewModeChange, selectedType, onTypeChange,
                   Race
                 </p>
               </button>
+              
+              {/* Only show Past filter in list view */}
+              {viewMode === 'list' && (
+                <button
+                  onClick={() => handleTypeChange('past')}
+                  className="h-[40px] px-[16px] rounded-md transition-colors flex items-center"
+                >
+                  <p className={`text-[16px] font-normal leading-6 ${
+                    selectedType === 'past'
+                      ? 'text-brand-white underline decoration-solid'
+                      : 'text-brand-white/70'
+                  }`}>
+                    Past
+                  </p>
+                </button>
+              )}
               
               <div className="border-t border-brand-white/20 my-2" />
               
