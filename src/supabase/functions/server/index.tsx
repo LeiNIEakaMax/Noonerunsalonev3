@@ -2,10 +2,11 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
-import { getEvents } from "./routes/get-events.tsx";
-import { createEvent } from "./routes/create-event.tsx";
-import { updateEvent } from "./routes/update-event.tsx";
-import { deleteEvent } from "./routes/delete-event.tsx";
+import { getEvents } from "./get-events.tsx";
+import { createEvent } from "./create-event.tsx";
+import { updateEvent } from "./update-event.tsx";
+import { deleteEvent } from "./delete-event.tsx";
+import { subscribeNewsletter } from "./subscribe-newsletter.tsx";
 
 const app = new Hono();
 
@@ -24,15 +25,16 @@ app.use(
   }),
 );
 
+// Event routes
+app.get("/make-server-8ddba6eb/events", getEvents);
+app.post("/make-server-8ddba6eb/events", createEvent);
+app.put("/make-server-8ddba6eb/events/:id", updateEvent);
+app.delete("/make-server-8ddba6eb/events/:id", deleteEvent);
+app.post("/make-server-8ddba6eb/newsletter", subscribeNewsletter);
+
 // Health check endpoint
-app.get("/make-server-36165629/health", (c) => {
+app.get("/make-server-8ddba6eb/health", (c) => {
   return c.json({ status: "ok", version: "3.0" });
 });
-
-// Event routes
-app.get("/make-server-36165629/events", getEvents);
-app.post("/make-server-36165629/events", createEvent);
-app.put("/make-server-36165629/events/:id", updateEvent);
-app.delete("/make-server-36165629/events/:id", deleteEvent);
 
 Deno.serve(app.fetch);

@@ -1,15 +1,16 @@
 import { Context } from "npm:hono";
-import { supabase } from "../lib/supabase.tsx";
+import { supabase } from "./supabase.tsx";
 
 export async function getEvents(c: Context) {
   try {
-    console.log("✅ Fetching events from running_event table");
+    // Log start of request
+    console.log("✅ Fetching events from running_event_with_city view");
     
     const { data, error } = await supabase
-      .from('running_event')
+      .from('running_event_with_city')
       .select('*')
-      .ilike('status', 'approved')
-      .order('event_date', { ascending: true });
+      .ilike('Status', 'approved')
+      .order('Event Date', { ascending: true });
 
     if (error) {
       console.error("❌ Supabase error:", error);
@@ -20,6 +21,7 @@ export async function getEvents(c: Context) {
     }
 
     console.log(`✅ Found ${data?.length || 0} events`);
+    console.log('Sample event with city:', JSON.stringify(data?.[0], null, 2));
     return c.json({ events: data || [] });
   } catch (error) {
     console.error("❌ Exception:", error);

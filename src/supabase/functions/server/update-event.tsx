@@ -1,5 +1,5 @@
 import { Context } from "npm:hono";
-import { supabase } from "../lib/supabase.tsx";
+import { supabase } from "./supabase.tsx";
 
 export async function updateEvent(c: Context) {
   try {

@@ -1,5 +1,5 @@
 import { Context } from "npm:hono";
-import { supabase } from "../lib/supabase.tsx";
+import { supabase } from "./supabase.tsx";
 
 export async function createEvent(c: Context) {
   try {
@@ -9,13 +9,13 @@ export async function createEvent(c: Context) {
     const { data, error } = await supabase
       .from('running_event')
       .insert([{
-        event_title: body.eventTitle,
-        event_date: body.eventDate,
-        description: body.eventDescription,
-        event_type: String(body.type).toLowerCase(),
-        event_link: body.link,
-        organizer_id: body.organizerId,
-        status: 'pending',
+        'Event Title': body.eventTitle,
+        'Event Date': body.eventDate,
+        'Description': body.eventDescription,
+        'Event Type': String(body.type).toLowerCase(),
+        'Event Link': body.link,
+        'Organizer ID': body.organizerId,
+        'Status': 'pending',
       }])
       .select();
 
