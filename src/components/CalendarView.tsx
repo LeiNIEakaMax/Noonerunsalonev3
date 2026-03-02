@@ -146,7 +146,7 @@ export function CalendarView({ events, selectedType, onEventHover }: CalendarVie
   }, [numberOfRows]);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden pb-[16px] p-[0px]">
+    <div className="h-full flex flex-col overflow-hidden pb-[16px] p-[0px] relative">
       {/* Calendar Header */}
       <div className="flex items-center justify-between pb-[1px] mb-0 pt-[0px] pr-[0px] pl-[0px] px-[0px] py-[1px] flex-shrink-0">
         <div className="flex items-center gap-4">
@@ -447,6 +447,15 @@ export function CalendarView({ events, selectedType, onEventHover }: CalendarVie
           </>
         )}
       </AnimatePresence>
+
+      <div 
+        className="absolute left-[26px] w-[398px] z-10 pointer-events-none"
+        style={{ top: `calc(62px + (100% - 78px) * (${numberOfRows} - 1.5) / ${numberOfRows})` }}
+      >
+        <p className="font-['Stylish',sans-serif] text-[length:var(--text-p)] leading-[24px] text-brand-white whitespace-pre-wrap text-[#dfd7d999]">
+          {`forthesharedexperience gathers runs, races, and community events—no algorithm, just what’s worth showing up for. (around GTA)`}
+        </p>
+      </div>
     </div>
   );
 }

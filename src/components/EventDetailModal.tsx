@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { Event } from '../App';
 import svgPaths from '../imports/svg-o4wz1nx3e0';
-import placeholderImage from 'figma:asset/cbb500d97a058e030e8e7d5f2ca54503b804ff3c.png';
+import placeholderImage from 'figma:asset/bbef7db76f3553555c686d773d458b288255fc93.png';
 import { createPortal } from 'react-dom';
 
 interface EventDetailModalProps {

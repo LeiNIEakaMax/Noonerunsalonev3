@@ -6,8 +6,9 @@ import { AddEventForm } from './components/AddEventForm';
 import { NotFoundPage } from './components/NotFoundPage';
 import { projectId, publicAnonKey } from './utils/supabase/info';
 import { Plus } from 'lucide-react';
-import { isDaytime } from './utils/sunTimes';
 import errorImage from 'figma:asset/db9decd47b4e7ebd53bdee4f39a5e4e662b73128.png';
+import faviconImage from 'figma:asset/d544b541e3d7a2494f5673b016cfc3a842a7f22d.png';
+import defaultEventImage from 'figma:asset/bbef7db76f3553555c686d773d458b288255fc93.png';
 
 import { AboutPage5 } from './components/AboutPage5';
 import { Footer } from './components/Footer';
@@ -48,9 +49,12 @@ function App() {
   const [isAddEventFormOpen, setIsAddEventFormOpen] = useState(false);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
   
-  // Auto-theme: Initialize based on Toronto sun times
+  // Auto-theme: Initialize based on system preference
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    return isDaytime() ? 'light' : 'dark';
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
   });
   
   // Track if user has manually overridden the theme in this session
@@ -80,30 +84,26 @@ function App() {
     setHoveredEventState({ image, side });
   };
   
-  // Auto-theme: Check sun times every minute and update theme (unless user has overridden)
+  // Auto-theme: Listen for system preference changes
   useEffect(() => {
-    const checkAndUpdateTheme = () => {
-      // Only auto-update if user hasn't manually changed theme
+    if (userOverrideTheme) return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Set initial value to match system if not overridden (handles case where system changed before hydrate/render)
+    // Actually, initial state already handles this. We just need to listen for changes.
+    
+    const handleChange = (e: MediaQueryListEvent) => {
       if (!userOverrideTheme) {
-        const shouldBeDaytime = isDaytime();
-        const expectedTheme = shouldBeDaytime ? 'light' : 'dark';
-        
-        // Only update if theme needs to change
-        if (theme !== expectedTheme) {
-          console.log(`🌅 Auto-theme: Switching to ${expectedTheme} mode`);
-          setTheme(expectedTheme);
-        }
+        const newTheme = e.matches ? 'dark' : 'light';
+        console.log(`💻 System theme changed: Switching to ${newTheme} mode`);
+        setTheme(newTheme);
       }
     };
 
-    // Check immediately
-    checkAndUpdateTheme();
-
-    // Check every minute (60000ms)
-    const interval = setInterval(checkAndUpdateTheme, 60000);
-
-    return () => clearInterval(interval);
-  }, [theme, userOverrideTheme]);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [userOverrideTheme]);
 
   // Handle manual theme change
   const handleThemeChange = (newTheme: 'light' | 'dark') => {
@@ -133,6 +133,17 @@ function App() {
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Set favicon
+  useEffect(() => {
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = faviconImage;
   }, []);
 
   // Handle scroll for header visibility
@@ -213,7 +224,7 @@ const fetchEvents = async () => {
         description: row.description || '',
         status: row.status || '',
         city: row.city_name || '',
-        image_path: row.image_path || '',
+        image_path: row.image_path || defaultEventImage,
         display_name: row.photographer_display_name || '',
         handle: row.photographer_handle || '',
         profile_url: row.photographer_profile_url || '',

@@ -524,6 +524,10 @@
     left: -32px;
   }
 
+  .left-\[26px\] {
+    left: 26px;
+  }
+
   .z-0 {
     z-index: 0;
   }
@@ -879,6 +883,10 @@
 
   .w-\[181px\] {
     width: 181px;
+  }
+
+  .w-\[398px\] {
+    width: 398px;
   }
 
   .w-\[487px\] {
@@ -1463,6 +1471,10 @@
     font-family: Funnel Sans, sans-serif;
   }
 
+  .font-\[\'Stylish\'\,sans-serif\] {
+    font-family: Stylish, sans-serif;
+  }
+
   .font-sans {
     font-family: var(--font-sans);
   }
@@ -1649,6 +1661,14 @@
 
   .whitespace-nowrap {
     white-space: nowrap;
+  }
+
+  .whitespace-pre-wrap {
+    white-space: pre-wrap;
+  }
+
+  .text-\[\#dfd7d999\] {
+    color: #dfd7d999;
   }
 
   .text-brand-blue {

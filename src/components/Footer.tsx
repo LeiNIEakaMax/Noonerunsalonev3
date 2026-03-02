@@ -52,7 +52,7 @@ export function Footer({ onAboutClick, onSuggestClick, onNewsletterClick }: Foot
       </div>
       
       <div className="mt-6 md:mt-0 hover:text-brand-white transition-colors" style={{ fontFamily: "'Funnel Sans', sans-serif" }}>
-        Created by Max Nie <a href="https://www.instagram.com/leitothemax/" target="_blank" rel="noopener noreferrer" className="hover:underline">@leitothmax</a>
+        Created by Max Nie <a href="https://www.instagram.com/leitothemax/" target="_blank" rel="noopener noreferrer" className="hover:underline">@leitothemax</a>
       </div>
     </div>
   );
