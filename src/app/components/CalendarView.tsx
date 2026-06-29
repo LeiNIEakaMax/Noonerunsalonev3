@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import type { Event, FilterType } from '../App';
 import { ExternalLink } from 'lucide-react';
 import { EventDetailModal } from './EventDetailModal';
